@@ -18,3 +18,7 @@ def run(ctx):
 @task
 def get(ctx, pkg = ''):
     ctx.run('docker run {args} {img} go get -u -v {pkg}'.format(args=args, img=img, pkg=pkg))
+
+@task
+def pdf(ctx):
+    ctx.run('docker run {args} {img} go run pdfwriter.go'.format(args=args, img=img))
