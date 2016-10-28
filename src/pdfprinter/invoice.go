@@ -4,41 +4,52 @@ import (
     "time"
     "fmt"
     "strings"
+    "strconv"
 )
+// TODO: remove gross numbers!!
+func truncate(in float64) float64 {
+    // truncate a floating to 2 digits
+    // TODO: find better method than convert it to string and back
+    f, err := strconv.ParseFloat(fmt.Sprintf("%.2f", in), 64)
+    if err == nil {
+       fmt.Sprintf("Error should not happen: %v", err) 
+    }
+    return f
+}
 // all prices are with 0.0001 Euro resolution (so int), currency is assumed euro
 type InvoiceLineItem struct {
-    netSum      int
+    netSum      float64
     taxRate     int
-    taxValue    int
-    grossSum    int
-    itemPrice   int
+    taxValue    float64
+    grossSum    float64
+    itemPrice   float64
     description string
     amount      int
 }
-func(self *InvoiceLineItem) Set (amount int, itemPrice int, taxRate int, description string) {
+func(self *InvoiceLineItem) Set (amount int, itemPrice float64, taxRate int, description string) {
     self.amount = amount
     self.itemPrice = itemPrice
     self.taxRate = taxRate
     self.description = description
 
-    self.netSum = self.amount * self.itemPrice
-    self.taxValue = self.netSum * self.taxRate / 100
+    self.netSum = float64(self.amount) * self.itemPrice
+    self.taxValue = self.netSum * float64(self.taxRate) / 100
     self.grossSum = self.netSum + self.taxValue
 }
 func(self *InvoiceLineItem) NetSum() string {
-    return strings.Replace(fmt.Sprintf("%.2f", float64(self.netSum) / 10000.0),".", ",", -1)
+    return strings.Replace(fmt.Sprintf("%.2f", self.netSum),".", ",", -1)
 }
 func(self *InvoiceLineItem) TaxRate() string {
     return fmt.Sprintf("%d", self.taxRate)
 }
 func(self *InvoiceLineItem) TaxValue() string {
-    return strings.Replace(fmt.Sprintf("%.2f", float64(self.taxValue) / 10000.0),".", ",", -1)
+    return strings.Replace(fmt.Sprintf("%.2f", self.taxValue),".", ",", -1)
 }
 func(self *InvoiceLineItem) GrossSum() string {
-    return strings.Replace(fmt.Sprintf("%.2f", float64(self.grossSum) / 10000.0),".", ",", -1)
+    return strings.Replace(fmt.Sprintf("%.2f", self.grossSum),".", ",", -1)
 }
 func(self *InvoiceLineItem) ItemPrice() string {
-    return strings.Replace(fmt.Sprintf("%.2f", float64(self.itemPrice) / 10000.0),".", ",", -1)
+    return strings.Replace(fmt.Sprintf("%.2f", self.itemPrice),".", ",", -1)
 }
 func(self *InvoiceLineItem) Description() string {
     return self.description
@@ -53,9 +64,9 @@ type Invoice struct {
     serviceStartDate time.Time
     serviceEndDate time.Time
     dueDate time.Time
-    totalNetSum int
-    totalTaxValue int
-    totalGrossSum int
+    totalNetSum float64
+    totalTaxValue float64
+    totalGrossSum float64
 }
 func(self *Invoice) InvoiceDate() string {
     return fmt.Sprintf("%02d.%02d.%d", self.invoiceDate.Day(), self.invoiceDate.Month(), self.invoiceDate.Year())
@@ -70,13 +81,13 @@ func(self *Invoice) DueDate() string {
     return fmt.Sprintf("%02d.%02d.%d", self.dueDate.Day(), self.dueDate.Month(), self.dueDate.Year())
 }
 func(self *Invoice) TotalNetSum() string {
-    return strings.Replace(fmt.Sprintf("%.02f", float64(self.totalNetSum) / 10000.0),".", ",", -1)
+    return strings.Replace(fmt.Sprintf("%.02f", self.totalNetSum),".", ",", -1)
 }
 func(self *Invoice) TotalTaxValue() string {
-    return strings.Replace(fmt.Sprintf("%.02f", float64(self.totalTaxValue) / 10000.0),".", ",", -1)
+    return strings.Replace(fmt.Sprintf("%.02f", self.totalTaxValue),".", ",", -1)
 }
 func(self *Invoice) TotalGrossSum() string {
-    return strings.Replace(fmt.Sprintf("%.03f", float64(self.totalGrossSum) / 10000.0),".", ",", -1)
+    return strings.Replace(fmt.Sprintf("%.02f", truncate(self.totalNetSum) + truncate(self.totalTaxValue)),".", ",", -1)
 }
 func(self *Invoice) SetInvoiceDate(invoiceDate time.Time) {
     if invoiceDate.IsZero() {
@@ -101,7 +112,7 @@ func(self *Invoice) SetServiceDateRange(startDate time.Time, endDate time.Time) 
     self.serviceStartDate = startDate
     self.serviceEndDate = endDate
 }
-func(self *Invoice) AddLineItem(amount int, itemPrice int, taxRate int, description string) {
+func(self *Invoice) AddLineItem(amount int, itemPrice float64, taxRate int, description string) {
     li := new(InvoiceLineItem)
     li.Set(amount, itemPrice, taxRate, description)
     self.LineItems = append(self.LineItems, *li)

@@ -2,7 +2,7 @@ package main
 
 import (
     //"os"
-    "fmt"
+    //"fmt"
     "time"
     "pdfprinter"
 )
@@ -25,8 +25,8 @@ func main() {
     days, hours, _ := ts.GetNormalizedWorktime()
 
     iv := new(pdfprinter.Invoice)
-    iv.AddLineItem(days, 5400000, 19, "day rate")
-    iv.AddLineItem(hours, 675000, 19, "hour rate")
+    iv.AddLineItem(days, 540, 19, "day rate")
+    iv.AddLineItem(hours, 67.50, 19, "hour rate")
     iv.SetInvoiceDate(time.Now())
     iv.SetDueDate(time.Now().AddDate(0,1,0))
     iv.SetServiceDateRange(ts.PeriodStartDate, ts.PeriodEndDate)
@@ -34,9 +34,9 @@ func main() {
     //fmt.Printf("Normalized Worktime: days %v, hours: %v, minutes: %v\n", days, hours, minutes)
     //fmt.Printf("net: %v, gross: %v, tax: %v\n", float64(iv.TotalNetSum) / 10000, float64(iv.TotalGrossSum) / 10000, float64(iv.TotalTaxValue) / 10000)
     //fmt.Printf("INvoice: %v\n", iv)
-    fmt.Printf("Test1 %.02f\n", 1.425)
-    fmt.Printf("Test2 %.02f\n", 1.525)
-    fmt.Printf("Test3 %.02f\n", 1.625)
+    // fmt.Printf("Test1 %.02f\n", 1.425)
+    // fmt.Printf("Test2 %.02f\n", 1.525)
+    // fmt.Printf("Test3 %.02f\n", 1.625)
 
     pdf := new(pdfprinter.PdfWriter)
     pdf.Init()
