@@ -2,7 +2,8 @@ package main
 
 import (
     //"os"
-    //"fmt"
+    "fmt"
+    "flag"
     "time"
     "pdfprinter"
 )
@@ -20,8 +21,40 @@ import (
 
 
 func main() {
+
+
+    // flag type (timesheet, invoice, all (default))
+    docType := flag.String("type", "both", "which document type to print [invoice, timesheet, both]. Defaults to both")
+    // flag input file
+    inFile := flag.String("in", "", "The Input file, a CSV file with the collection of actually worked days for the specified time period.")
+    // flag output dir invoices (obsolete if --type timesheet)
+    invoiceDir := flag.String("invoiceDir", "", "directory to place the written invoice (and look for invoice ID)")
+    // flag output dir timesheet (obsolete if --type invoice)
+    invoiceDir := flag.String("timesheetDir", "", "directory to place the written timesheet")
+    // flag invoice ID (obsolete if --type timesheet, per default it is read from --invoice-output-dir)
+    invoiceId := flag.String("invoiceDir", "", "invoice ID to put on the invoice document")
+
+    flag.Parse()
+
+    // validate flags:
+    if *inFile == "" {
+        // TODO: no infile defined
+    } else {
+        if _, err := os.Stat(*inFile); os.IsNotExist(err) {
+            // TODO infile does not exist
+        }
+    }
+
+    if *docType != "invoice" && *docType != "timesheet" && *docType != "both" {
+        // TODO: error
+    }
+
+
+
+
+
     ts := new(pdfprinter.Timesheet)
-    ts.ParseFile("arbeitszeit.csv")
+    ts.ParseFile(*inFile)
     days, hours, _ := ts.GetNormalizedWorktime()
 
     iv := new(pdfprinter.Invoice)
