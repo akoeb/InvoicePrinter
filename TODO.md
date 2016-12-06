@@ -4,6 +4,8 @@
 * HTTP interface:
   * /invoice request: JSON data response PDF document
   * /timesheet request: JSON data response PDF document
+  * /project  - CRUD for projects with all relevant static data
+  * /project/{PROJECT-ID}/[start|stop] - start / stop to count time for the project
 * test for HTTP interface
 
 * microservice abstraction:
@@ -13,3 +15,4 @@
     * handlers / service layer ...??
     * routing...??
     * persistence layer ??
+
