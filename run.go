@@ -5,6 +5,8 @@ import (
     "fmt"
     "flag"
     "time"
+    "log"
+    "path/filepath"
     "pdfprinter"
 )
 
@@ -20,6 +22,19 @@ import (
 // * test for REST
 
 
+func file_exists(filename *string) bool {
+    if _, err := os.Stat(*filename); os.IsNotExist(err) {
+        return false
+    }
+    return true
+}
+func getInvoiceFromDir(dirname *string) *string {
+    files, _ := filepath.Glob(dirname + "/invoice_*_signed.pdf")
+    for _, file := range files {
+        // TODO: find highest invoice id
+    }
+}
+
 func main() {
 
 
@@ -30,25 +45,68 @@ func main() {
     // flag output dir invoices (obsolete if --type timesheet)
     invoiceDir := flag.String("invoiceDir", "", "directory to place the written invoice (and look for invoice ID)")
     // flag output dir timesheet (obsolete if --type invoice)
-    invoiceDir := flag.String("timesheetDir", "", "directory to place the written timesheet")
+    timesheetDir := flag.String("timesheetDir", "", "directory to place the written timesheet")
     // flag invoice ID (obsolete if --type timesheet, per default it is read from --invoice-output-dir)
-    invoiceId := flag.String("invoiceDir", "", "invoice ID to put on the invoice document")
+    invoiceId := flag.String("invoiceId", "", "invoice ID to put on the invoice document")
 
     flag.Parse()
 
-    // validate flags:
+    // validate flags
+
+    // infile must be given and exist
     if *inFile == "" {
-        // TODO: no infile defined
-    } else {
-        if _, err := os.Stat(*inFile); os.IsNotExist(err) {
-            // TODO infile does not exist
+        // no infile defined
+        log.Fatal("No input file argument is defined.")
+    } else if ! file_exists (*inFile){
+        // infile does not exist
+        log.Fatal("the specified input file does not exist.")
+    }
+
+    switc *docType  {
+    case "invoice":
+        if *timesheetDir != "" {
+            // obsolete timesheet dir in invoice
+            log.Fatal("The invoice document type does not need a timesheet dir.")
         }
-    }
+        if *invoiceDir == "" {
+            // error: document type invoice needs invoice dir
+            log.Fatal("The invoice document type needs an invoice dir.")
+        } else if ! file_exists (*invoiceDir){
+            // error: invoice dir does  not exist
+            log.Fatal("The specified invoice dir does not exist.")
+        } else {
+        }
+        if *invoiceId == "" {
+            invoiceId = getInvoiceIdFromDir(invoiceDir)
+        }
+        if *invoiceId == "" {
+            // error: no ID fround from looking at output directory
+            log.Fatal("No invoice ID specified, and we could not determine one ourselves.")
+        }
 
-    if *docType != "invoice" && *docType != "timesheet" && *docType != "both" {
-        // TODO: error
-    }
+        break;
+    case "timesheet":
+        if *invoiceDir != "" {
+            // obsolete invoice dir in invoice
+            log.Fatal("The timesheet document type does not need an invoice dir.")
+        }
+        if *timesheetDir == "" {
+            // error: document type timesheet needs timesheet dir
+            log.Fatal("The timesheet document type needs a timesheet dir.")
 
+        } else if ! file_exists (*timesheetDir){
+            // error: timesheet dir does  not exist
+            log.Fatal("The specified timesheet dir does not exist.")
+        }
+
+    case "both":
+
+        // no error condition here
+
+    default:
+        // TODO error: unknown doc type
+        log.Fatal("Unknown document type found")
+    }
 
 
 
@@ -76,6 +134,6 @@ func main() {
     pdf.WriteSender("Alexander Köb\nSchönhauser Allee 58\n10437 Berlin\nUst ID Nr.: DE 2893 54 867")
     pdf.WriteRecipient("An:\nITinera projects & experts GmbH & Co.KG\nMergenthalerallee 79-81\n65760 Eschborn")
     pdf.WriteDate("Berlin, den 06.10.2016")
-    pdf.WriteSubject("Rechnung Nr. 2016-10-036", "(bei Zahlung bitte angeben)")
+    pdf.WriteSubject(*invoiceId, "(bei Zahlung bitte angeben)")
     pdf.WriteInvoice(*iv)
 }
